@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Optional: hides scrollbars */
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+<body>
+    <script>
+        let w = window.innerWidth
+        let h = window.innerHeight
+
+        //global
+
+        //game control
+        var stage = 0; //keeps track of which function to run
+        //player
+        var px= 400;// p for player 1
+        var py = 375; 
+        var pWidth = 30;
+        var pHeight = 70;
+
+        //boxes
+        var bx = 200; //b1 for box 1
+        var by = 300;
+        var bWidth = 200;
+        var bHeight = 40; 
+
+        //setup
+        function setup(){
+            createCanvas(window.innerWidth, window.innerHeight)
+            background(100)
+            rectMode(CENTER);
+            textAlign(CENTER);
+
+        }//close setup
+        //draw
+        function draw(){
+            if(stage == 0){
+                game();
+            }//close = 0
+          
+
+        }//close draw
+        //game  
+        function game(){
+            //appearance of game
+            background(252, 221, 230)
+            //
+            //grass
+            noStroke();
+            fill ("green")
+            rect(width/2, height, width, 400);
+            //window fill
+            noFill();
+            stroke(2);
+            strokeWeight(40);
+            rect(width/2, height/2, width, height);
+
+            //draw box
+            stroke(0);
+            strokeWeight(5);
+            fill("brown");
+            rect(bx,by,bWidth,bHeight);
+
+            //draw player
+            stroke(0);
+            strokeWeight(5);
+            fill("navy");
+            rect(px,465,pWidth,pHeight);
+
+        }//close game
+
+    </script>
+</body>
+</html>
