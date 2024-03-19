@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.js" integrity="sha512-TU9AWtV5uUZPX8dbBAH8NQF1tSdigPRRT82vllAQ1Ke28puiqLA6ZVKxtUGlgrH6yWFnkKy+sE6luNEGH9ar0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type = "text/javascript" src = "main.js"></script>
+    <style>
+        body,html{
+            margin: 0;
+            padding:0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let w = window.innerWidth
+        let h = window.innerHeight
+        let BACKGROUND, BASE, BOTTOM_PIPE, TOP_PIPE, BIRD, DIE, HIT, WING, SWOOSH;
+        function preload(){ //LOAD ALL THE MEDIA FILES
+            BACKGROUND = loadImage("media/flappybg.png")
+            BASE = loadImage("meida/flapbase.png")
+            TOP_PIPE = loadImage("media/flappipe2.png")
+            BOTTOM_PIPE = loadImage("media/flappipe1.png")
+            BIRD = loadImage("media/flapbird.png")
+            DIE = loadSound("media/die.mp3")
+            HIT = loadSound("media/hit.mp3")
+            WING = loadSound("media/wing.mp3")
+            SWOOSH = loadSound("media/swoosh.mp3")
+        }
+ 
+        //now i create my canvas
+        function setup(){
+            createCanvas(w,h)
+        }
+        function draw(){
+          
+
+        }
+    </script>
+</body>
+</html>
