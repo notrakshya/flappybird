@@ -6,7 +6,7 @@
     <title>Document</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.js" integrity="sha512-TU9AWtV5uUZPX8dbBAH8NQF1tSdigPRRT82vllAQ1Ke28puiqLA6ZVKxtUGlgrH6yWFnkKy+sE6luNEGH9ar0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type = "text/javascript" src = "main.js"></script>
+    
     <style>
         body,html{
             margin: 0;
@@ -16,27 +16,32 @@
 </head>
 <body>
     <script>
+        let game_size;
         let w = window.innerWidth
         let h = window.innerHeight
         let BACKGROUND, BASE, BOTTOM_PIPE, TOP_PIPE, BIRD, DIE, HIT, WING, SWOOSH;
         function preload(){ //LOAD ALL THE MEDIA FILES
-            BACKGROUND = loadImage("media/flappybg.png")
-            BASE = loadImage("meida/flapbase.png")
-            TOP_PIPE = loadImage("media/flappipe2.png")
-            BOTTOM_PIPE = loadImage("media/flappipe1.png")
-            BIRD = loadImage("media/flapbird.png")
-            DIE = loadSound("media/die.mp3")
-            HIT = loadSound("media/hit.mp3")
-            WING = loadSound("media/wing.mp3")
-            SWOOSH = loadSound("media/swoosh.mp3")
+            BACKGROUND = loadImage("media/flappybg.png");
+            BASE = loadImage("media/flapbase.png");
+            TOP_PIPE = loadImage("media/flappipe2.png");
+            BOTTOM_PIPE = loadImage("media/flappipe1.png");
+            BIRD = loadImage("media/flapbird.png");
+            DIE = loadSound("media/die.mp3");
+            HIT = loadSound("media/hit.mp3");
+            WING = loadSound("media/wing.mp3");
+            SWOOSH = loadSound("media/swoosh.mp3");
         }
  
         //now i create my canvas
         function setup(){
-            createCanvas(w,h)
+            game_size = [windowWidth, windowHeight];
+            createCanvas(game_size[0],game_size[1]);
+            BACKGROUND.resize(game_size[0],game_size[1]);
+            BASE.resize(game_size[0], BASE.height);
+            frameRate(25);
         }
         function draw(){
-          
+          image(BACKGROUND ,0,0);
 
         }
     </script>
