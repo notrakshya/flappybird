@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Includes the p5.collide2D addon library -->
+    <script defer src="https://unpkg.com/p5.collide2d"></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.js" integrity="sha512-TU9AWtV5uUZPX8dbBAH8NQF1tSdigPRRT82vllAQ1Ke28puiqLA6ZVKxtUGlgrH6yWFnkKy+sE6luNEGH9ar0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-   
     <style>
         body,html{
             margin: 0;
@@ -19,162 +20,122 @@
 </head>
 <body>
     <script>
-        let game_size = [288,512];
-        let gamerun= false;
-        let w = window.innerWidth
-        let h = window.innerHeight
-        let BACKGROUND;
-        let BASE; 
-        let BOTTOM_PIPE
-        let TOP_PIPE; 
-        let BIRD;
-        let DIE;
-        let HIT;
-        let WING; 
-        let SWOOSH;
-        let logo;
-        let start;
-        let pipe = [800,100];
-        let pipeb = [1700,100];
-        let pipe_gap = 100;
-        let pipeb_gap = 150;
-        let pipe_speed = 9.4;
-        let bird = [50,250];
+        let w, h;
+        let BACKGROUND, BASE, TOP_PIPE, BOTTOM_PIPE, BIRD, logo, start, LIVES;
+        let pipes=[];
+        let inte = 120;
+        let birdy = "blue";
+        let hit1 = false;
+        let hit2 = false;
+        let birdPos = [700, 200];
         let jump = 0;
-        let lives = 5;
-        let points = 0;
-
+        let WING; // Define WING variable
+        let gamerun = false; // Variable to control the game initialization
+        let lives = 3;
+    
         function preload(){ //LOAD ALL THE MEDIA FILES
             BACKGROUND = loadImage("back.png");
             BASE = loadImage("base.png");
             TOP_PIPE = loadImage("flappipe2.png");
             BOTTOM_PIPE = loadImage("flappipe1.png");
             BIRD = loadImage("bird.png");
-            DIE = loadSound("die.mp3");
-            HIT = loadSound("hit.mp3");
-            WING = loadSound("wing.mp3");
-            SWOOSH = loadSound("swoosh.mp3");
+            WING = loadSound("wing.mp3"); // Define WING as a loaded sound
             logo = loadImage("logo.png");
             start = loadImage("start.png")
+            LIVES = loadImage("lives.png")
         }
  
         //canvas
         function setup(){
+            w = window.innerWidth;
+            h = window.innerHeight;
             game_size = [w, h];
             createCanvas(game_size[0],game_size[1]);
             BACKGROUND.resize(game_size[0], game_size[1]);
             // Draw the resized background image
             image(BACKGROUND, 0, 0);
             background(BACKGROUND,255);
-            BASE.resize(game_size[0], BASE.height);
             frameRate(60);
         }
-
-        function is_collision(im1, x1, y1, im2, x2, y2) {
-            if ((x1 + im1.width < x2) || (x1 > x2 + im2.width) || (y1 + im1.height < y2) || (y1 > y2 + im2.height)) {
-                return false;
-            } else {
-                return true; // There is a collision
+        
+        function pipe_spawn(){
+            if (frameCount % inte === 0) {
+                pipes.push([w, random(h / 5, h - h / 5)]);
+            }
+            for (let i = 0; i < pipes.length; i++) {
+                pipes[i][0] -= w / 200;
+                strokeWeight(10);
+                if (pipes[0][0] + w / 24 <= 0) {
+                    pipes.shift();
+                }
+                rectMode(CORNER);
+                fill("red");
+                image(TOP_PIPE, pipes[i][0] - w / 24, 0, w / 15, pipes[i][1] - (h / 5));
+                image(BOTTOM_PIPE, pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5));
+            }
+        }
+        
+        
+        function collision() {
+            for (let i = 0; i < pipes.length; i++) {
+                hit1 = collideRectCircle(pipes[i][0] - w / 24, 0, w / 15, pipes[i][1]-(h/5), birdPos[0], birdPos[1], 30);
+                hit2 = collideRectCircle(pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5), birdPos[0], birdPos[1], 30);
+                if (hit1 || hit2) {
+                    console.log("Collision occurred!");
+                    // You can add game over logic here if needed
+                    return; // Exit the function early as game over state is reached
+                }
             }
         }
 
-        function play(){//process the game play and run 1/25th of a second
-            //sort pipes
-            pipe[0]-= pipe_speed;
-            pipeb[0]-= pipe_speed;
-
-            if(pipe[0]< -TOP_PIPE.width) {
-                pipe[0] = game_size[0];
-                pipe[1]=50+random(game_size[1]-200);
-                pipe_gap = 100+random(100);
-                points +=1
+        function drawBirdy(){
+            fill(birdy);
+            BIRD.resize(60, 60);
+            image(BIRD, birdPos[0], birdPos[1]);
+            if (keyIsDown(32) && !WING.isPlaying()) {
+                jump = 16;
+                WING.play();
             }
-
-            if(pipeb[0]< -TOP_PIPE.width) {
-                pipeb[0] = game_size[0];
-                pipeb[1]=50+random(game_size[1]-200);
-                pipeb_gap = 100+random(100);
-                points +=1
-            }
-            image(TOP_PIPE,pipe[0],pipe[1]-TOP_PIPE.height);
-            image(BOTTOM_PIPE,pipe[0],pipe[1]+pipe_gap);
-
-            image(TOP_PIPE,pipeb[0],pipeb[1]-TOP_PIPE.height);
-            image(BOTTOM_PIPE,pipeb[0],pipeb[1]+pipeb_gap);
-            //bird movement
-            if(mouseIsPressed&& !WING.isPlaying()){
-                jump = 13;
-                WING.play()
-            }
-            if (jump > -10){
+            if (jump > -16) {
                 jump -= 1;
             }
-            bird[1] -= jump;
-            image(BIRD,bird[0],bird[1]);
-            //detect collision
-            if (is_collision(BIRD,bird[0],bird[1],TOP_PIPE,pipe[0],pipe[1]-TOP_PIPE.height) || 
-                is_collision(BIRD,bird[0],bird[1],BOTTOM_PIPE,pipe[0],pipe[1]+pipe_gap)){
-                pipe[0] = game_size[0];
-                pipe[1]=50+random(game_size[1]-200);
-                pipe_gap = 100+random(100);
-                lives -=1;
-                if (lives<0){
-                    gamerun = false;
-                    DIE.play()
-                } else{
-                    HIT.play()
-                }
+            birdPos[1] -= jump;
+            if (birdPos[1] < 0) { // If bird goes above the screen
+                birdPos[1] = 0; // Set bird position to the top of the screen
             }
-            if (is_collision(BIRD,bird[0],bird[1],TOP_PIPE,pipeb[0],pipeb[1]-TOP_PIPE.height ) || 
-                is_collision(BIRD,bird[0],bird[1],TOP_PIPE,pipeb[0],pipeb[1]+pipeb_gap )){
-                pipeb[0] = game_size[0];
-                pipeb[1]=50+random(game_size[1]-200);
-                pipeb_gap = 100+random(100);
-                lives -=1;
-                if (lives<0){
-                    gamerun = false;
-                    DIE.play()
-                } else{
-                    HIT.play()
-                }
+            if (birdPos[1] + BIRD.height > height) { // If bird goes below the screen
+                birdPos[1] = height - BIRD.height; // Set bird position to just above the bottom of the screen
             }
+        }
 
-            //print
-            text(lives,10,20);
-            text(points,game_size[0]-20,20);
-        }
-        function draw(){
-            BIRD.resize(40,40);
-            BOTTOM_PIPE.resize(80,600);
-            TOP_PIPE.resize(80,700);
-          image(BACKGROUND ,0,0);
-          image(BASE, 0, game_size[1]-BASE.height);
-          if (! gamerun){
-            textAlign(CENTER,CENTER);
-            textSize(40);
-            fill("white")
-            logo.resize(300, 300); // Resizing the logo image to 100x100
-            // image(logo, game_size[0]/2,game_size[1]/3);
-            fill("black")
-            start.resize(600,350)
-            image(start, game_size[0]/3, game_size[1]*4/7.5);
-            let logoX = (game_size[0] - logo.width) / 2;
-            let logoY = game_size[1] / 50;
-            image(logo, logoX, logoY);
-            if(mouseIsPressed){
-                gamerun = true;
-                lives = 5;
-                points = 0;
+        function keyPressed() {
+            if (key === ' ') {
+                jump = 16;
+                WING.play();
             }
-        } else{
-            play();
-            if (lives < 0) {
-            textAlign(CENTER, CENTER);
-            textSize(32);
-            fill(255, 0, 0);
-            text('Game Over', width / 2, height / 2 - 20);
-            text('Score: ' + points, width / 2, height / 2 + 20);
         }
+        
+        function lived(){
+            for (i = 0; i < lives ; i++){
+                LIVES.resize(60, 60);
+                image(LIVES,i*60,0);
+            }
+        }
+
+        function draw() {
+            clear();
+            image(BACKGROUND, 0, 0);
+            pipe_spawn();
+            collision();
+            drawBirdy();
+            lived();
+       
+            if (!gamerun){
+                textAlign(CENTER,CENTER);
+                textSize(40);
+                fill("white")
+                fill("black")
+               
         }
     }
     </script>
