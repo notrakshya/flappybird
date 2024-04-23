@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Includes the p5.collide2D addon library -->
+    <script defer src="https://unpkg.com/p5.collide2d"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.js" integrity="sha512-TU9AWtV5uUZPX8dbBAH8NQF1tSdigPRRT82vllAQ1Ke28puiqLA6ZVKxtUGlgrH6yWFnkKy+sE6luNEGH9ar0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body,html{
+            margin: 0;
+            padding:0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .playAgainButton{
+            background-color: #4CAF50; /* Green background */
+            border: none;
+            color: white; /* White text */
+            padding: 15px 32px; /* Padding */
+            text-align: center; /* Text alignment */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Display as inline block */
+            font-size: 16px; /* Font size */
+            margin: 4px 2px; /* Margin */
+            transition-duration: 0.4s; /* Animation */
+            cursor: pointer; /* Cursor pointer */
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let w, h;
+        let BACKGROUND, BASE, TOP_PIPE, BOTTOM_PIPE, BIRD, logo, start, LIVES, BROKE;
+        let pipes=[];
+        let inte = 120;
+        let birdy = "blue";
+        let hit1 = false;
+        let hit2 = false;
+        let birdPos = [700, 200];
+        let jump = 0;
+        let WING; // Define WING variable
+        let gamerun = false; // Variable to control the game initialization
+        let lives = 3;
+        let score = 0; // Variable to keep track of the score
+        let playAgainButton;
+
+        function preload(){ //LOAD ALL THE MEDIA FILES
+            BACKGROUND = loadImage("back.png");
+            BASE = loadImage("base.png");
+            TOP_PIPE = loadImage("flappipe2.png");
+            BOTTOM_PIPE = loadImage("flappipe1.png");
+            BIRD = loadImage("bird.png");
+            WING = loadSound("wing.mp3"); // Define WING as a loaded sound
+            logo = loadImage("logo.png");
+            start = loadImage("start.png")
+            LIVES = loadImage("lives.png")
+            BROKE = loadImage("broke.png")
+        }
+ 
+        //canvas
+        function setup(){
+            w = window.innerWidth;
+            h = window.innerHeight;
+            game_size = [w, h];
+            createCanvas(game_size[0],game_size[1]);
+            BACKGROUND.resize(game_size[0], game_size[1]);
+            // Draw the resized background image
+            image(BACKGROUND, 0, 0);
+            background(BACKGROUND,255);
+            frameRate(60);
+        }
+        
+        function pipe_spawn(){
+            if (frameCount % inte === 0) {
+                pipes.push([w, random(h / 5, h - h / 5), false]); // Add a boolean to track if the bird has passed the pipe
+            }
+            for (let i = 0; i < pipes.length; i++) {
+                pipes[i][0] -= w / 200;
+                strokeWeight(10);
+                if (pipes[0][0] + w / 24 <= 0) {
+                    pipes.shift();
+                }
+                rectMode(CORNER);
+                fill("red");
+                image(TOP_PIPE, pipes[i][0] - w / 24, 0, w / 15, pipes[i][1] - (h / 5));
+                image(BOTTOM_PIPE, pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5));
+            }
+        }
+        
+        function collision() {  
+            for (let i = 0; i < pipes.length; i++) {
+                hit1 = collideRectCircle(pipes[i][0] - w / 24, 0, w / 15, pipes[i][1]-(h/5), birdPos[0], birdPos[1], 30);
+                hit2 = collideRectCircle(pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5), birdPos[0], birdPos[1], 30);
+                if (hit1 || hit2) {
+                    console.log("Collision occurred!");
+                    lives--; // Decrement lives
+                    if (lives <= 0) {
+                        // Game over logic here
+                        gameOver();
+                    }
+                    return;
+                } else if (pipes[i][0] < birdPos[0] && !pipes[i][2]) { // Check if the bird passed a pipe
+                    pipes[i][2] = true; // Mark the pipe as passed
+                    score++; // Increment the score
+                    console.log("Score: " + score); // Log the score
+                }
+            }
+        }
+
+        function drawBirdy(){
+            fill(birdy);
+            BIRD.resize(60, 60);
+            image(BIRD, birdPos[0], birdPos[1]);
+            if (keyIsDown(32) && !WING.isPlaying()) {
+                jump = 16;
+                WING.play();
+            }
+            if (jump > -16) {
+                jump -= 1;
+            }
+            birdPos[1] -= jump;
+            if (birdPos[1] < 0) { // If bird goes above the screen
+                birdPos[1] = 0; // Set bird position to the top of the screen
+            }
+            if (birdPos[1] + BIRD.height > height) { // If bird goes below the screen
+                birdPos[1] = height - BIRD.height; // Set bird position to just above the bottom of the screen
+            }
+        }
+
+        function keyPressed() {
+            if (key === ' ') {
+                jump = 16;
+                WING.play();
+            }
+        }
+        
+        function lived() {
+            if (lives > 0) {
+                LIVES.resize(80, 80);
+                image(LIVES, 10, 0);
+            } else {
+                BROKE.resize(80, 80);
+                image(BROKE, 10, 0);
+            }
+        }
+
+        function drawScore() {
+            textAlign(LEFT);
+            textSize(32);
+            fill(255);
+            text("ＳＣＯＲＥ: " + score, 100, 40); // Display the score on the canvas
+        }
+
+        function draw() {
+            clear();
+            image(BACKGROUND, 0, 0);
+            pipe_spawn();
+            collision();
+            drawBirdy();
+            drawScore(); // Draw the score
+            lived();
+       
+            if (!gamerun){
+                textAlign(CENTER,CENTER);
+                textSize(40);
+                fill("white")
+                logo.resize(300, 300); // Resizing the logo image to 100x100
+                fill("black")
+                start.resize(600,350)
+                image(start, game_size[0]/3, game_size[1]*4/7.5);
+                let logoX = (game_size[0] - logo.width) / 2;
+                let logoY = game_size[1] / 50;
+                image(logo, logoX, logoY);
+                if(mouseIsPressed){
+                    gamerun = true;
+                } else{
+                    gamerun = false;
+                }
+            }
+        }
+
+        function gameOver() {
+            textAlign(CENTER);
+            textSize(40);
+            fill("white");
+            text("Game Over!", width / 2, height / 2);
+            text("Your Score: " + score, width / 2, height / 2 + 50);
+            noLoop(); // Stop the game loop
+
+            // Create the "Play Again" button if it doesn't exist
+            if (!playAgainButton) {
+                playAgainButton = createButton("Play Again");
+                playAgainButton.position(width / 2 - 50, height / 2 + 100);
+                playAgainButton.mousePressed(restartGame);
+            }
+        }
+
+        function restartGame() {
+            // Reset game variables
+            score = 0;
+            lives = 3;
+            pipes = [];
+            birdPos = [700, 200];
+            loop(); // Restart the game loop
+
+            // Remove the button after clicking
+            playAgainButton.remove();
+            playAgainButton = null; // Reset button variable
+        }
+    </script>
+</body>
+</html>
