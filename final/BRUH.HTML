@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Optional: hides scrollbars */
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+<body>
+    <script>
+        let w = window.innerWidth
+        let h = window.innerHeight
+
+        //global
+
+        //game control
+        var stage = 0; //keeps track of which function to run
+        //player
+        var px= 400;// p for player 1
+        var py = 375; 
+        var pWidth = 30;
+        var pHeight = 70;
+
+        //boxes
+        var bx = 200; //b1 for box 1
+        var by = 300;
+        var bWidth = 200;
+        var bHeight = 40; 
+
+        //gravity
+        var jump = false;
+        var direction = 1; //the force of gravity in the y direction
+        var velocity = 2; //the speed of the player
+        var jumpPower = 10; //the energy or strength of player
+        var fallingSpeed = 2; // equal to velocity
+        var minHeight = 375; //height of the ground
+
+
+        //setup
+        function setup(){
+            createCanvas(window.innerWidth, window.innerHeight)
+            background(100)
+            rectMode(CENTER);
+            textAlign(CENTER);
+            window.addEventListener('keydown', function(e) {
+                if (e.keyCode === 32) { // 32 is the keyCode for spacebar
+                    jump = true;
+                }
+            });
+        }//close setup
+        //draw
+        function draw(){
+            keyPressed();
+            keyTyped();
+            gravity();
+            if(stage == 0){
+                game();
+            }//close = 0
+          
+        }//close draw
+        //game  
+        function game(){
+            //appearance of game
+            background(252, 221, 230)
+            //
+            //grass
+            noStroke();
+            fill ("green")
+            rect(width/2, height, width, 400);
+            //window fill
+            noFill();
+            stroke(2);
+            strokeWeight(40);
+            rect(width/2, height/2, width, height);
+
+            //draw box
+            stroke(0);
+            strokeWeight(5);
+            fill("brown");
+            rect(bx,by,bWidth,bHeight);
+
+            //draw player
+            stroke(0);
+            strokeWeight(5);
+            fill("navy");
+            rect(px,465,pWidth,pHeight);
+
+        }//close game
+
+        //gravity
+        function gravity(){
+            if (py >= minHeight && jump == false){
+                //stop falling on the ground
+                py = py;
+            }
+            else {
+                py += direction * velocity; // Adjust player's y position based on velocity
+            }
+            if (jump == true && py >= minHeight) { // Only allow jumping when on the ground
+                velocity = -jumpPower;
+                jump = false; // Reset jump after initiating it
+            }
+            else {
+                velocity = fallingSpeed; // Apply falling speed if not jumping
+            }
+        }
+
+        function keyPressed(){
+            if (keyIsDown(LEFT_ARROW)) {
+                px = px - 5; //move left
+            }//close left
+
+            if (keyIsDown(RIGHT_ARROW)) {
+                px = px + 5; //move right
+            }//close right
+        }
+
+        function keyTyped(){
+            if (keyIsDown(65)){
+                jump=true;//jump
+            }
+            else{ 
+                jump=false;
+            }
+        }
+
+    </script>
+</body>
+</html>

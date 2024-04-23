@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Includes the p5.collide2D addon library -->
+    <script defer src="https://unpkg.com/p5.collide2d"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.js" integrity="sha512-TU9AWtV5uUZPX8dbBAH8NQF1tSdigPRRT82vllAQ1Ke28puiqLA6ZVKxtUGlgrH6yWFnkKy+sE6luNEGH9ar0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body,html{
+            margin: 0;
+            padding:0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let w, h;
+        let BACKGROUND, BASE, TOP_PIPE, BOTTOM_PIPE, BIRD, logo, start, LIVES;
+        let pipes=[];
+        let inte = 120;
+        let birdy = "blue";
+        let hit1 = false;
+        let hit2 = false;
+        let birdPos = [700, 200];
+        let jump = 0;
+        let gameOver = false; // Declare gameOver variable
+        let WING; // Define WING variable
+        let freezeGame = false;
+
+        function preload(){ //LOAD ALL THE MEDIA FILES
+            BACKGROUND = loadImage("back.png");
+            BASE = loadImage("base.png");
+            TOP_PIPE = loadImage("flappipe2.png");
+            BOTTOM_PIPE = loadImage("flappipe1.png");
+            BIRD = loadImage("bird.png");
+            WING = loadSound("wing.mp3"); // Define WING as a loaded sound
+            logo = loadImage("logo.png");
+            start = loadImage("start.png")
+            LIVES = loadImage("lives.png")
+        }
+ 
+        //canvas
+        function setup(){
+            w = window.innerWidth;
+            h = window.innerHeight;
+            game_size = [w, h];
+            createCanvas(game_size[0],game_size[1]);
+            BACKGROUND.resize(game_size[0], game_size[1]);
+            // Draw the resized background image
+            image(BACKGROUND, 0, 0);
+            background(BACKGROUND,255);
+            frameRate(60);
+        }
+        
+        function pipe_spawn(){
+            if (!freezeGame && frameCount % inte === 0) {
+                pipes.push([w, random(h / 5, h - h / 5)]);
+            }
+            for (let i = 0; i < pipes.length; i++) {
+                if (!freezeGame) {
+                    pipes[i][0] -= w / 200;
+                }
+                strokeWeight(10);
+                if (pipes[0][0] + w / 24 <= 0) {
+                    pipes.shift();
+                }
+                rectMode(CORNER);
+                fill("red");
+                image(TOP_PIPE, pipes[i][0] - w / 24, 0, w / 15, pipes[i][1] - (h / 5));
+                image(BOTTOM_PIPE, pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5));
+            }
+        }
+        
+        function collision() {
+            for (let i = 0; i < pipes.length; i++) {
+                hit1 = collideRectCircle(pipes[i][0] - w / 24, 0, w / 15, pipes[i][1]-(h/5), birdPos[0], birdPos[1], 30);
+                hit2 = collideRectCircle(pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5), birdPos[0], birdPos[1], 30);
+                if (hit1 || hit2) {
+                    console.log("Collision occurred!");
+                    gameOver = true; // Set gameOver to true when collision occurs
+                    freezeGame = true;
+                    setTimeout(resetGame, 2000); // Add a 2-second delay before resetting the game
+                    return; // Exit the function early as game over state is reached
+                }
+            }
+        }
+
+
+        
+        function drawBirdy(){
+            if (!freezeGame) {
+                image(BIRD, birdPos[0], birdPos[1]);
+                fill(birdy);
+                BIRD.resize(60, 60);
+                if (keyIsDown(32) && !WING.isPlaying()) {
+                    jump = 16;
+                    WING.play();
+                }
+                if (jump > -16) {
+                    jump -= 1;
+                }
+                birdPos[1] -= jump;
+                if (birdPos[1] < 0) { // If bird goes above the screen
+                    birdPos[1] = 0; // Set bird position to the top of the screen
+                }
+                if (birdPos[1] + BIRD.height > height) { // If bird goes below the screen
+                    birdPos[1] = height - BIRD.height; // Set bird position to just above the bottom of the screen
+                }
+            }
+        }
+
+        function keyPressed() {
+            if (key === ' ' && !gameOver) {
+                jump = 16;
+                WING.play();
+            }
+        }
+        
+        function resetGame() {
+            pipes = []; // Clear pipes array
+            birdPos = [700, 200]; // Reset bird position
+            gameOver = false; // Reset game over state
+
+            // Add a delay before unfreezing the game
+            setTimeout(() => {
+                freezeGame = false; // Unfreeze the game after 2 seconds
+            }, 2000);
+        }
+  
+        function score(){
+
+        }
+        
+        function draw() {
+            clear();
+            image(BACKGROUND, 0, 0);
+            pipe_spawn();
+            collision();
+            drawBirdy();
+            score();
+            if (gameOver) {
+                textSize(32);
+                textAlign(CENTER, CENTER);
+                fill(255, 0, 0);
+                text("Game Over", width / 2, height / 2);
+                // You can also reset the game or perform any other actions here
+                return; // Exit draw loop early if game over
+            }
+            
+        }
+    </script>
+</body>
+</html>

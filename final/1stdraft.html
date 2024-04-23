@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Optional: hides scrollbars */
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+<body>
+    <script>
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+
+        //game control
+        let stage = 0;
+
+        //player
+        let px = 400;
+        let py = 375;
+        let pWidth = 30;
+        let pHeight = 70;
+
+        //gravity
+        let jumping = false;
+        let jumpPower = 20; // Increased jump power for better visibility
+        let gravity = 1;
+        let veloY = 0;
+        let miniHeight = 375; //height of the ground
+
+        //setup
+        function setup() {
+            createCanvas(window.innerWidth, window.innerHeight);
+            background(100);
+            rectMode(CENTER);
+            textAlign(CENTER);
+        }
+
+        //draw
+        function draw() {
+            keyPressed();
+            Gravity();
+
+            if (stage == 0) {
+                game();
+            }
+        }
+
+        //game  
+        function game() {
+            background(252, 221, 230);
+
+            // Draw grass
+            noStroke();
+            fill("green");
+            rect(width / 2, height, width, 400);
+
+            // Draw window
+            noFill();
+            stroke(2);
+            strokeWeight(40);
+            rect(width / 2, height / 2, width, height);
+
+            // Draw box
+            stroke(0);
+            strokeWeight(5);
+            fill("brown");
+            rect(200, 300, 200, 40);
+
+            // Draw player
+            stroke(0);
+            strokeWeight(5);
+            fill("navy");
+            rect(px, py, pWidth, pHeight);
+        }
+
+        function Gravity() {
+            if (py <= height - pHeight / 2 && jumping == false) {
+                veloY += gravity;
+                py += veloY;
+            } else {
+                jumping = false;
+                veloY = 0;
+                py = height - pHeight / 2;
+            }
+        }
+
+        function keyPressed() {
+            if (keyIsDown(LEFT_ARROW)) {
+                px = px - 5; //move left
+            }
+
+            if (keyIsDown(RIGHT_ARROW)) {
+                px = px + 5; //move right
+            }
+
+            if (keyIsDown(32) && !jumping) { // 32 is the key code for spacebar
+                veloY = -jumpPower; // apply jump power (upward)
+                jumping = true; // mark as jumping
+            }
+        }
+    </script>
+</body>
+</html>
