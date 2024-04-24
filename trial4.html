@@ -16,10 +16,10 @@
             height: 100vh;
             overflow: hidden;
         }
-        .playAgainButton{
-            background-color: #4CAF50; /* Green background */
+        button{
+            background-color: #e81919; /* Green background */
             border: none;
-            color: white; /* White text */
+            color: rgb(249, 245, 247); /* White text */
             padding: 15px 32px; /* Padding */
             text-align: center; /* Text alignment */
             text-decoration: none; /* Remove underline */
@@ -34,8 +34,8 @@
 <body>
     <script>
         let w, h;
-        let BACKGROUND, BASE, TOP_PIPE, BOTTOM_PIPE, BIRD, logo, start, LIVES, BROKE;
-        let pipes=[];
+        let BACKGROUND, BASE, TOP_PIPE, BOTTOM_PIPE, BIRD, logo, start, LIVES, BROKE, DIE, OVER;
+        let pipes = [];
         let inte = 120;
         let birdy = "blue";
         let hit1 = false;
@@ -47,8 +47,9 @@
         let lives = 3;
         let score = 0; // Variable to keep track of the score
         let playAgainButton;
+        let bestScore = 0; // Variable to store the best score
 
-        function preload(){ //LOAD ALL THE MEDIA FILES
+        function preload() { //LOAD ALL THE MEDIA FILES
             BACKGROUND = loadImage("back.png");
             BASE = loadImage("base.png");
             TOP_PIPE = loadImage("flappipe2.png");
@@ -56,25 +57,35 @@
             BIRD = loadImage("bird.png");
             WING = loadSound("wing.mp3"); // Define WING as a loaded sound
             logo = loadImage("logo.png");
-            start = loadImage("start.png")
-            LIVES = loadImage("lives.png")
-            BROKE = loadImage("broke.png")
+            start = loadImage("start.png");
+            LIVES = loadImage("lives.png");
+            BROKE = loadImage("broke.png");
+            DIE = loadSound("die.mp3"); // Load the "DIE" sound
+            OVER= loadImage("over.png");
         }
- 
-        //canvas
-        function setup(){
+
+        function setup() {
             w = window.innerWidth;
             h = window.innerHeight;
             game_size = [w, h];
-            createCanvas(game_size[0],game_size[1]);
+            createCanvas(game_size[0], game_size[1]);
             BACKGROUND.resize(game_size[0], game_size[1]);
             // Draw the resized background image
             image(BACKGROUND, 0, 0);
-            background(BACKGROUND,255);
+            background(BACKGROUND, 255);
             frameRate(60);
+
+            // Retrieve the best score from localStorage, if available
+            if (localStorage.getItem('bestScore')) {
+                bestScore = parseInt(localStorage.getItem('bestScore'));
+            }
+            window.addEventListener('beforeunload', function() {
+                localStorage.removeItem('bestScore');
+            });
         }
-        
-        function pipe_spawn(){
+
+
+        function pipe_spawn() {
             if (frameCount % inte === 0) {
                 pipes.push([w, random(h / 5, h - h / 5), false]); // Add a boolean to track if the bird has passed the pipe
             }
@@ -90,10 +101,10 @@
                 image(BOTTOM_PIPE, pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5));
             }
         }
-        
-        function collision() {  
+
+        function collision() {
             for (let i = 0; i < pipes.length; i++) {
-                hit1 = collideRectCircle(pipes[i][0] - w / 24, 0, w / 15, pipes[i][1]-(h/5), birdPos[0], birdPos[1], 30);
+                hit1 = collideRectCircle(pipes[i][0] - w / 24, 0, w / 15, pipes[i][1] - (h / 5), birdPos[0], birdPos[1], 30);
                 hit2 = collideRectCircle(pipes[i][0] - w / 24, pipes[i][1] + h / 8, w / 15, h - (pipes[i][1] / 5), birdPos[0], birdPos[1], 30);
                 if (hit1 || hit2) {
                     console.log("Collision occurred!");
@@ -101,6 +112,7 @@
                     if (lives <= 0) {
                         // Game over logic here
                         gameOver();
+                        DIE.play();
                     }
                     return;
                 } else if (pipes[i][0] < birdPos[0] && !pipes[i][2]) { // Check if the bird passed a pipe
@@ -111,7 +123,7 @@
             }
         }
 
-        function drawBirdy(){
+        function drawBirdy() {
             fill(birdy);
             BIRD.resize(60, 60);
             image(BIRD, birdPos[0], birdPos[1]);
@@ -126,7 +138,8 @@
             if (birdPos[1] < 0) { // If bird goes above the screen
                 birdPos[1] = 0; // Set bird position to the top of the screen
             }
-            if (birdPos[1] + BIRD.height > height) { // If bird goes below the screen
+            if (birdPos[1] + BIRD.height > height) {
+                gameOver(); // If bird goes below the screen
                 birdPos[1] = height - BIRD.height; // Set bird position to just above the bottom of the screen
             }
         }
@@ -137,49 +150,48 @@
                 WING.play();
             }
         }
-        
+
         function lived() {
             if (lives > 0) {
                 LIVES.resize(80, 80);
-                image(LIVES, 10, 0);
+                image(LIVES, 10, 15);
             } else {
                 BROKE.resize(80, 80);
-                image(BROKE, 10, 0);
+                image(BROKE, 10, 15);
             }
         }
 
         function drawScore() {
             textAlign(LEFT);
             textSize(32);
-            fill(255);
-            text("ＳＣＯＲＥ: " + score, 100, 40); // Display the score on the canvas
+            fill(248, 170, 205 );
+            stroke("black"); // Set the border color to black
+            strokeWeight(4); 
+            text("ꜱᴄᴏʀᴇ: " + score, 100, 40); // Display the score on the canvas
+            text("ʙᴇꜱᴛ: " + bestScore, 100, 80); // Display the best score below the score
         }
 
         function draw() {
             clear();
             image(BACKGROUND, 0, 0);
-            pipe_spawn();
-            collision();
-            drawBirdy();
-            drawScore(); // Draw the score
-            lived();
-       
-            if (!gamerun){
-                textAlign(CENTER,CENTER);
+            if (gamerun) {
+                pipe_spawn();
+                collision();
+                drawBirdy();
+                drawScore(); // Draw the score
+                lived();
+      
+            } else {
+                textAlign(CENTER, CENTER);
                 textSize(40);
                 fill("white")
                 logo.resize(300, 300); // Resizing the logo image to 100x100
                 fill("black")
-                start.resize(600,350)
-                image(start, game_size[0]/3, game_size[1]*4/7.5);
+                start.resize(600, 350)
+                image(start, game_size[0] / 3, game_size[1] * 4 / 7.5);
                 let logoX = (game_size[0] - logo.width) / 2;
                 let logoY = game_size[1] / 50;
                 image(logo, logoX, logoY);
-                if(mouseIsPressed){
-                    gamerun = true;
-                } else{
-                    gamerun = false;
-                }
             }
         }
 
@@ -187,16 +199,31 @@
             textAlign(CENTER);
             textSize(40);
             fill("white");
-            text("Game Over!", width / 2, height / 2);
-            text("Your Score: " + score, width / 2, height / 2 + 50);
+            OVER.resize(300,100)
+            image(OVER, width / 2.5, height / 8); // Display the OVER image
+            stroke(0); // Set the border color to black
+            strokeWeight(4); // Set the border thickness
+            text("𝙨𝙘𝙤𝙧𝙚: " + score, width / 2, height / 2 + 50);
+            text("𝙗𝙚𝙨𝙩 𝙨𝙘𝙤𝙧𝙚: " + bestScore, width / 2, height /2.8 + 90);
+            textSize(15);
+            text("⚠️note:if you want to keep your best score click play again and if u want to refresh then refresh the game⚠️", width / 2, height /1.1 + 0)
+
+            // Update the best score if the current score is higher
+            if (score > bestScore) {
+                bestScore = score;
+                // Store the best score in localStorage
+                localStorage.setItem('bestScore', bestScore);
+            }
+
             noLoop(); // Stop the game loop
 
             // Create the "Play Again" button if it doesn't exist
             if (!playAgainButton) {
-                playAgainButton = createButton("Play Again");
-                playAgainButton.position(width / 2 - 50, height / 2 + 100);
+                playAgainButton = createButton("𝓹𝓵𝓪𝔂 𝓪𝓰𝓪𝓲𝓷");
+                playAgainButton.position(width / 2.1 - 50, height / 2 + 100);
                 playAgainButton.mousePressed(restartGame);
             }
+            DIE.play()
         }
 
         function restartGame() {
@@ -210,6 +237,10 @@
             // Remove the button after clicking
             playAgainButton.remove();
             playAgainButton = null; // Reset button variable
+        }
+
+        function mousePressed() {
+            gamerun = true;
         }
     </script>
 </body>
